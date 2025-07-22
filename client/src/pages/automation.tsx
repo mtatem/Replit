@@ -8,11 +8,29 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Bot, TrendingUp, AlertTriangle, Settings, Activity, Zap, Target, Shield, Laugh, Gem, Star } from "lucide-react";
+import { Bot, TrendingUp, AlertTriangle, Settings, Activity, Zap, Target, Shield, Laugh, Gem, Star, Play, Pause, RotateCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { getAutomationRuleDescription } from "@/lib/mock-data";
 import type { AutomationRule } from "@shared/schema";
+
+interface AutomationExecution {
+  id: number;
+  userId: number;
+  cryptoId: number;
+  type: string;
+  amount: string;
+  price: string;
+  totalValue: string;
+  automationTriggered: boolean;
+  createdAt: string;
+  crypto: {
+    id: number;
+    symbol: string;
+    name: string;
+    type: string;
+  };
+}
 
 export default function Automation() {
   const { toast } = useToast();
@@ -20,6 +38,10 @@ export default function Automation() {
   
   const { data: rules, isLoading } = useQuery<AutomationRule[]>({
     queryKey: ['/api/automation/1'],
+  });
+
+  const { data: executions, isLoading: executionsLoading } = useQuery<AutomationExecution[]>({
+    queryKey: ['/api/automation/1/executions'],
   });
 
   const [localRules, setLocalRules] = useState<Record<string, AutomationRule>>({});
@@ -51,6 +73,45 @@ export default function Automation() {
         title: "Error",
         description: "Failed to update automation rules",
         variant: "destructive",
+      });
+    },
+  });
+
+  const pauseAllMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest('POST', '/api/automation/1/pause-all');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/automation/1'] });
+      toast({
+        title: "Success",
+        description: "All automation rules paused",
+      });
+    },
+  });
+
+  const enableAllMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest('POST', '/api/automation/1/enable-all');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/automation/1'] });
+      toast({
+        title: "Success",
+        description: "All automation rules enabled",
+      });
+    },
+  });
+
+  const resetDefaultsMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest('POST', '/api/automation/1/reset-defaults');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/automation/1'] });
+      toast({
+        title: "Success",
+        description: "All rules reset to recommended defaults",
       });
     },
   });
@@ -295,13 +356,36 @@ export default function Automation() {
             })}
           </div>
 
-          <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4">
-            <Button
-              variant="outline"
-              className="border-dark-border"
-            >
-              Reset to Defaults
-            </Button>
+          <div className="flex flex-col sm:flex-row justify-between space-y-2 sm:space-y-0 sm:space-x-4">
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+              <Button
+                variant="outline"
+                className="border-dark-border text-sm"
+                onClick={() => pauseAllMutation.mutate()}
+                disabled={pauseAllMutation.isPending}
+              >
+                <Pause className="h-4 w-4 mr-2" />
+                {pauseAllMutation.isPending ? "Pausing..." : "Pause All"}
+              </Button>
+              <Button
+                variant="outline"
+                className="border-dark-border text-sm"
+                onClick={() => enableAllMutation.mutate()}
+                disabled={enableAllMutation.isPending}
+              >
+                <Play className="h-4 w-4 mr-2" />
+                {enableAllMutation.isPending ? "Enabling..." : "Enable All"}
+              </Button>
+              <Button
+                variant="outline"
+                className="border-dark-border text-sm"
+                onClick={() => resetDefaultsMutation.mutate()}
+                disabled={resetDefaultsMutation.isPending}
+              >
+                <RotateCcw className="h-4 w-4 mr-2" />
+                {resetDefaultsMutation.isPending ? "Resetting..." : "Reset to Defaults"}
+              </Button>
+            </div>
             <Button
               onClick={handleSave}
               disabled={updateRuleMutation.isPending}
@@ -314,112 +398,268 @@ export default function Automation() {
 
         <TabsContent value="history" className="space-y-6">
           <Card className="bg-dark-surface border-dark-border">
-            <CardHeader>
-              <CardTitle>Recent Automation Executions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {[
-                  { asset: 'DOGE', action: 'Profit Taking', amount: '50%', value: '$1,247.89', time: '2 hours ago', type: 'meme' },
-                  { asset: 'SOL', action: 'Partial Sell', amount: '25%', value: '$3,456.21', time: '1 day ago', type: 'major' },
-                  { asset: 'MATIC', action: 'Stop Loss', amount: '100%', value: '$892.34', time: '3 days ago', type: 'altcoin' },
-                  { asset: 'ETH', action: 'Profit Taking', amount: '10%', value: '$2,134.56', time: '1 week ago', type: 'major' },
-                ].map((execution, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 border border-dark-border rounded-xl">
-                    <div className="flex items-center space-x-4">
-                      <div className={`w-10 h-10 bg-gradient-to-r ${
-                        execution.type === 'meme' ? 'from-yellow-400 to-orange-500' :
-                        execution.type === 'altcoin' ? 'from-purple-500 to-pink-500' :
-                        'from-crypto-blue to-crypto-green'
-                      } rounded-full flex items-center justify-center font-bold text-white`}>
-                        {execution.asset.slice(0, 2)}
-                      </div>
-                      <div>
-                        <p className="font-semibold">{execution.asset} - {execution.action}</p>
-                        <p className="text-sm text-gray-400">Sold {execution.amount} of holdings</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-profit-green">{execution.value}</p>
-                      <p className="text-sm text-gray-400">{execution.time}</p>
-                    </div>
-                  </div>
-                ))}
+            <CardHeader className="p-3 lg:p-6">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg lg:text-xl">Automation Execution History</CardTitle>
+                <div className="flex space-x-2">
+                  <Button variant="outline" size="sm" className="border-dark-border text-xs lg:text-sm">
+                    Export
+                  </Button>
+                  <Button variant="outline" size="sm" className="border-dark-border text-xs lg:text-sm">
+                    Filter
+                  </Button>
+                </div>
               </div>
+            </CardHeader>
+            <CardContent className="p-3 lg:p-6 pt-0">
+              {executionsLoading ? (
+                <div className="animate-pulse">Loading execution history...</div>
+              ) : executions && executions.length > 0 ? (
+                <div className="space-y-3 lg:space-y-4">
+                  {executions.map((execution) => {
+                    const isProfit = execution.type === 'auto_sell' && parseFloat(execution.totalValue) > 0;
+                    const isStopLoss = execution.type === 'auto_sell' && parseFloat(execution.totalValue) < 0;
+                    
+                    const actionType = isProfit ? 'Profit Taking' : isStopLoss ? 'Stop Loss' : 'Auto Sell';
+                    const actionColor = isProfit ? 'text-profit-green' : isStopLoss ? 'text-loss-red' : 'text-warning-yellow';
+                    
+                    return (
+                      <div key={execution.id} className="flex items-center justify-between p-3 lg:p-4 border border-dark-border rounded-xl hover:bg-dark-bg/50 transition-colors">
+                        <div className="flex items-center space-x-3 lg:space-x-4">
+                          <div className={`w-10 lg:w-12 h-10 lg:h-12 bg-gradient-to-r ${
+                            execution.crypto.type === 'meme' ? 'from-yellow-400 to-orange-500' :
+                            execution.crypto.type === 'altcoin' ? 'from-purple-500 to-pink-500' :
+                            'from-crypto-blue to-crypto-green'
+                          } rounded-full flex items-center justify-center font-bold text-white text-sm lg:text-base`}>
+                            {execution.crypto.symbol.slice(0, 2)}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-sm lg:text-base">{execution.crypto.symbol} - {actionType}</p>
+                            <p className="text-xs lg:text-sm text-gray-400">
+                              {execution.type === 'sell' ? 'Sold' : 'Auto-sold'} {Math.abs(parseFloat(execution.amount)).toFixed(6)} {execution.crypto.symbol}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {new Date(execution.createdAt).toLocaleDateString()} at {new Date(execution.createdAt).toLocaleTimeString()}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className={`font-semibold text-sm lg:text-base ${actionColor}`}>
+                            {parseFloat(execution.totalValue) >= 0 ? '+' : ''}${Math.abs(parseFloat(execution.totalValue)).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                          </p>
+                          <p className="text-xs lg:text-sm text-gray-400">
+                            @ ${parseFloat(execution.price).toLocaleString()}
+                          </p>
+                          <Badge variant="secondary" className={`text-xs mt-1 ${
+                            execution.crypto.type === 'meme' ? 'bg-yellow-500/20 text-yellow-400' :
+                            execution.crypto.type === 'altcoin' ? 'bg-purple-500/20 text-purple-400' :
+                            'bg-blue-500/20 text-blue-400'
+                          }`}>
+                            {execution.crypto.type}
+                          </Badge>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-dark-bg rounded-full flex items-center justify-center">
+                    <Activity className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2">No Automation Executions Yet</h3>
+                  <p className="text-gray-400 mb-4">Your automation rules haven't triggered any transactions yet.</p>
+                  <Button variant="outline" className="border-dark-border">
+                    View All Transactions
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card className="bg-dark-surface border-dark-border">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
+              <CardHeader className="p-3 lg:p-6">
+                <CardTitle className="flex items-center space-x-2 text-lg lg:text-xl">
                   <Settings className="h-5 w-5" />
                   <span>Global Settings</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Gas Fee Optimization</p>
-                    <p className="text-sm text-gray-400">Wait for lower gas fees before executing</p>
+              <CardContent className="space-y-4 p-3 lg:p-6 pt-0">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="global-automation" className="text-sm font-medium">
+                      Enable All Automation
+                    </Label>
+                    <Switch id="global-automation" defaultChecked />
                   </div>
-                  <Switch defaultChecked />
+                  <p className="text-xs text-gray-400">
+                    Master switch for all automation rules
+                  </p>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Smart Timing</p>
-                    <p className="text-sm text-gray-400">Analyze market conditions before selling</p>
+                
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="notifications" className="text-sm font-medium">
+                      Execution Notifications
+                    </Label>
+                    <Switch id="notifications" defaultChecked />
                   </div>
-                  <Switch defaultChecked />
+                  <p className="text-xs text-gray-400">
+                    Get notified when rules execute trades
+                  </p>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Email Notifications</p>
-                    <p className="text-sm text-gray-400">Get notified when rules are triggered</p>
+                
+                <div className="space-y-3">
+                  <Label htmlFor="max-daily" className="text-sm font-medium">
+                    Max Daily Executions
+                  </Label>
+                  <Input
+                    id="max-daily"
+                    type="number"
+                    defaultValue="10"
+                    className="bg-dark-bg border-dark-border"
+                  />
+                  <p className="text-xs text-gray-400">
+                    Prevent excessive trading in volatile markets
+                  </p>
+                </div>
+                
+                <div className="space-y-3">
+                  <Label htmlFor="delay" className="text-sm font-medium">
+                    Execution Delay (seconds)
+                  </Label>
+                  <Input
+                    id="delay"
+                    type="number"
+                    defaultValue="30"
+                    className="bg-dark-bg border-dark-border"
+                  />
+                  <p className="text-xs text-gray-400">
+                    Delay between trigger and execution
+                  </p>
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="gas-optimization" className="text-sm font-medium">
+                      Gas Fee Optimization
+                    </Label>
+                    <Switch id="gas-optimization" defaultChecked />
                   </div>
-                  <Switch defaultChecked />
+                  <p className="text-xs text-gray-400">
+                    Wait for lower gas fees before executing
+                  </p>
                 </div>
-                <div className="space-y-2">
-                  <Label>Maximum Daily Executions</Label>
-                  <Input type="number" defaultValue="10" className="bg-dark-bg border-dark-border" />
+                
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="smart-timing" className="text-sm font-medium">
+                      Smart Market Timing
+                    </Label>
+                    <Switch id="smart-timing" defaultChecked />
+                  </div>
+                  <p className="text-xs text-gray-400">
+                    Analyze market conditions before selling
+                  </p>
                 </div>
               </CardContent>
             </Card>
 
             <Card className="bg-dark-surface border-dark-border">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
+              <CardHeader className="p-3 lg:p-6">
+                <CardTitle className="flex items-center space-x-2 text-lg lg:text-xl">
                   <Shield className="h-5 w-5" />
-                  <span>Security Settings</span>
+                  <span>Security & Risk Management</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Multi-sig Required</p>
-                    <p className="text-sm text-gray-400">Require multiple approvals for large trades</p>
+              <CardContent className="space-y-4 p-3 lg:p-6 pt-0">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="multisig" className="text-sm font-medium">
+                      Multi-signature Required
+                    </Label>
+                    <Switch id="multisig" />
                   </div>
-                  <Switch />
+                  <p className="text-xs text-gray-400">
+                    Require multiple approvals for large trades
+                  </p>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Hardware Wallet Confirmation</p>
-                    <p className="text-sm text-gray-400">Confirm automation rules on hardware wallet</p>
+                
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="hardware-wallet" className="text-sm font-medium">
+                      Hardware Wallet Confirmation
+                    </Label>
+                    <Switch id="hardware-wallet" />
                   </div>
-                  <Switch />
+                  <p className="text-xs text-gray-400">
+                    Confirm automation rules on hardware wallet
+                  </p>
                 </div>
-                <div className="space-y-2">
-                  <Label>Large Trade Threshold (USD)</Label>
-                  <Input type="number" defaultValue="10000" className="bg-dark-bg border-dark-border" />
+                
+                <div className="space-y-3">
+                  <Label htmlFor="trade-threshold" className="text-sm font-medium">
+                    Large Trade Threshold (USD)
+                  </Label>
+                  <Input
+                    id="trade-threshold"
+                    type="number"
+                    defaultValue="10000"
+                    className="bg-dark-bg border-dark-border"
+                  />
+                  <p className="text-xs text-gray-400">
+                    Require additional confirmation above this amount
+                  </p>
                 </div>
-                <div className="space-y-2">
-                  <Label>Cool-down Period (minutes)</Label>
-                  <Input type="number" defaultValue="60" className="bg-dark-bg border-dark-border" />
+                
+                <div className="space-y-3">
+                  <Label htmlFor="cooldown" className="text-sm font-medium">
+                    Execution Cool-down (minutes)
+                  </Label>
+                  <Input
+                    id="cooldown"
+                    type="number"
+                    defaultValue="60"
+                    className="bg-dark-bg border-dark-border"
+                  />
+                  <p className="text-xs text-gray-400">
+                    Minimum time between rule executions
+                  </p>
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="pause-volatility" className="text-sm font-medium">
+                      Pause on High Volatility
+                    </Label>
+                    <Switch id="pause-volatility" defaultChecked />
+                  </div>
+                  <p className="text-xs text-gray-400">
+                    Temporarily pause automation during extreme market volatility
+                  </p>
                 </div>
               </CardContent>
             </Card>
+          </div>
+
+          {/* Action Buttons for Advanced Settings */}
+          <div className="flex flex-col sm:flex-row justify-between space-y-2 sm:space-y-0 sm:space-x-4">
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+              <Button variant="outline" className="border-dark-border text-sm">
+                <Settings className="h-4 w-4 mr-2" />
+                Export Settings
+              </Button>
+              <Button variant="outline" className="border-dark-border text-sm">
+                <Activity className="h-4 w-4 mr-2" />
+                Test Automation
+              </Button>
+            </div>
+            <Button className="bg-gradient-to-r from-crypto-blue to-crypto-green">
+              Save All Settings
+            </Button>
           </div>
         </TabsContent>
       </Tabs>

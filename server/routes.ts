@@ -100,6 +100,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Automation execution history endpoints
+  app.get("/api/automation/:userId/executions", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const transactions = await storage.getUserTransactions(userId);
+      const cryptos = await storage.getAllCryptocurrencies();
+      
+      // Filter for automation-triggered transactions
+      const automationTransactions = transactions
+        .filter(tx => tx.automationTriggered === true)
+        .map(tx => {
+          const crypto = cryptos.find(c => c.id === tx.cryptoId);
+          return { ...tx, crypto };
+        })
+        .sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime());
+
+      res.json(automationTransactions);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch automation executions" });
+    }
+  });
+
+  // Automation control endpoints
+  app.post("/api/automation/:userId/pause-all", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const rules = await storage.getUserAutomationRules(userId);
+      
+      for (const rule of rules) {
+        await storage.updateAutomationRule(rule.id, { enabled: false });
+      }
+      
+      res.json({ message: "All automation rules paused successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to pause automation rules" });
+    }
+  });
+
+  app.post("/api/automation/:userId/enable-all", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const rules = await storage.getUserAutomationRules(userId);
+      
+      for (const rule of rules) {
+        await storage.updateAutomationRule(rule.id, { enabled: true });
+      }
+      
+      res.json({ message: "All automation rules enabled successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to enable automation rules" });
+    }
+  });
+
+  app.post("/api/automation/:userId/reset-defaults", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const rules = await storage.getUserAutomationRules(userId);
+      
+      const defaults = {
+        major: { profitTarget: "20.00", stopLoss: "10.00", sellPercentage: "25.00" },
+        altcoin: { profitTarget: "30.00", stopLoss: "15.00", sellPercentage: "50.00" },
+        meme: { profitTarget: "100.00", stopLoss: "25.00", sellPercentage: "75.00" }
+      };
+      
+      for (const rule of rules) {
+        const defaultValues = defaults[rule.cryptoType as keyof typeof defaults];
+        if (defaultValues) {
+          await storage.updateAutomationRule(rule.id, {
+            ...defaultValues,
+            enabled: true
+          });
+        }
+      }
+      
+      res.json({ message: "All automation rules reset to defaults" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to reset automation rules" });
+    }
+  });
+
   // Transaction endpoints
   app.get("/api/transactions/:userId", async (req, res) => {
     try {
