@@ -105,12 +105,12 @@ export default function DexView() {
   const currentCrypto = cryptocurrencies?.find(c => selectedPair.startsWith(c.symbol));
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-3 lg:p-6 space-y-4 lg:space-y-6">
       {/* Trading Pair Selector & Stats */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+        <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
           <Select value={selectedPair} onValueChange={setSelectedPair}>
-            <SelectTrigger className="w-48 bg-dark-surface border-dark-border">
+            <SelectTrigger className="w-full sm:w-48 bg-dark-surface border-dark-border">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -128,9 +128,9 @@ export default function DexView() {
           </Select>
           
           {currentCrypto && (
-            <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-4 lg:space-x-6">
               <div>
-                <p className="text-2xl font-bold">${parseFloat(currentCrypto.currentPrice).toLocaleString()}</p>
+                <p className="text-xl lg:text-2xl font-bold">${parseFloat(currentCrypto.currentPrice).toLocaleString()}</p>
                 <div className="flex items-center space-x-2">
                   <Badge
                     variant="secondary"
@@ -155,36 +155,39 @@ export default function DexView() {
           )}
         </div>
 
-        <div className="flex items-center space-x-4">
-          <Button variant="outline" size="sm" className="border-dark-border">
+        <div className="flex items-center space-x-2 lg:space-x-4">
+          <Button variant="outline" size="sm" className="border-dark-border flex-1 sm:flex-none">
             <BarChart3 className="h-4 w-4 mr-2" />
-            Advanced
+            <span className="hidden sm:inline">Advanced</span>
           </Button>
-          <Button variant="outline" size="sm" className="border-dark-border">
+          <Button variant="outline" size="sm" className="border-dark-border flex-1 sm:flex-none">
             <Activity className="h-4 w-4 mr-2" />
-            Indicators
+            <span className="hidden sm:inline">Indicators</span>
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6">
         {/* Chart Section */}
-        <div className="lg:col-span-3 space-y-6">
+        <div className="lg:col-span-3 space-y-4 lg:space-y-6">
           {/* Price Chart */}
           <Card className="bg-dark-surface border-dark-border">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center space-x-2">
-                  <TrendingUp className="h-5 w-5" />
+            <CardHeader className="p-3 lg:p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+                <CardTitle className="flex items-center space-x-2 text-lg lg:text-xl">
+                  <TrendingUp className="h-4 lg:h-5 w-4 lg:w-5" />
                   <span>{selectedPair} Chart</span>
                 </CardTitle>
-                <div className="flex space-x-2">
+                <div className="flex space-x-1 lg:space-x-2 overflow-x-auto pb-2 sm:pb-0">
                   {["1m", "5m", "15m", "1h", "4h", "1d"].map((timeframe) => (
                     <Button
                       key={timeframe}
                       variant={timeframe === "15m" ? "default" : "ghost"}
                       size="sm"
-                      className={timeframe === "15m" ? "bg-crypto-blue" : ""}
+                      className={cn(
+                        "text-xs lg:text-sm px-2 lg:px-3 whitespace-nowrap",
+                        timeframe === "15m" ? "bg-crypto-blue" : ""
+                      )}
                     >
                       {timeframe}
                     </Button>
@@ -192,8 +195,8 @@ export default function DexView() {
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="h-96">
+            <CardContent className="p-3 lg:p-6 pt-0">
+              <div className="h-64 lg:h-96">
                 <canvas
                   ref={chartRef}
                   className="w-full h-full"
@@ -204,46 +207,46 @@ export default function DexView() {
           </Card>
 
           {/* Market Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
             <Card className="bg-dark-surface border-dark-border">
-              <CardContent className="p-4">
-                <p className="text-sm text-gray-400">24h Volume</p>
-                <p className="text-lg font-semibold">{marketStats['24hVolume']}</p>
+              <CardContent className="p-3 lg:p-4">
+                <p className="text-xs lg:text-sm text-gray-400">24h Volume</p>
+                <p className="text-sm lg:text-lg font-semibold">{marketStats['24hVolume']}</p>
               </CardContent>
             </Card>
             <Card className="bg-dark-surface border-dark-border">
-              <CardContent className="p-4">
-                <p className="text-sm text-gray-400">24h High</p>
-                <p className="text-lg font-semibold">{marketStats['24hHigh']}</p>
+              <CardContent className="p-3 lg:p-4">
+                <p className="text-xs lg:text-sm text-gray-400">24h High</p>
+                <p className="text-sm lg:text-lg font-semibold">{marketStats['24hHigh']}</p>
               </CardContent>
             </Card>
             <Card className="bg-dark-surface border-dark-border">
-              <CardContent className="p-4">
-                <p className="text-sm text-gray-400">24h Low</p>
-                <p className="text-lg font-semibold">{marketStats['24hLow']}</p>
+              <CardContent className="p-3 lg:p-4">
+                <p className="text-xs lg:text-sm text-gray-400">24h Low</p>
+                <p className="text-sm lg:text-lg font-semibold">{marketStats['24hLow']}</p>
               </CardContent>
             </Card>
             <Card className="bg-dark-surface border-dark-border">
-              <CardContent className="p-4">
-                <p className="text-sm text-gray-400">Market Cap</p>
-                <p className="text-lg font-semibold">{marketStats.marketCap}</p>
+              <CardContent className="p-3 lg:p-4">
+                <p className="text-xs lg:text-sm text-gray-400">Market Cap</p>
+                <p className="text-sm lg:text-lg font-semibold">{marketStats.marketCap}</p>
               </CardContent>
             </Card>
           </div>
         </div>
 
         {/* Trading Panel */}
-        <div className="space-y-6">
+        <div className="space-y-4 lg:space-y-6">
           {/* Buy/Sell Orders */}
           <Card className="bg-dark-surface border-dark-border">
-            <CardHeader>
-              <CardTitle>Trade {selectedPair.split('/')[0]}</CardTitle>
+            <CardHeader className="p-3 lg:p-6">
+              <CardTitle className="text-lg lg:text-xl">Trade {selectedPair.split('/')[0]}</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-3 lg:p-6 pt-0">
               <Tabs defaultValue="buy" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 bg-dark-bg">
-                  <TabsTrigger value="buy">Buy</TabsTrigger>
-                  <TabsTrigger value="sell">Sell</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-2 bg-dark-bg h-10 lg:h-11">
+                  <TabsTrigger value="buy" className="text-sm lg:text-base">Buy</TabsTrigger>
+                  <TabsTrigger value="sell" className="text-sm lg:text-base">Sell</TabsTrigger>
                 </TabsList>
                 
                 <div className="mt-4 space-y-4">
@@ -252,7 +255,7 @@ export default function DexView() {
                       variant={orderType === "market" ? "default" : "outline"}
                       size="sm"
                       onClick={() => setOrderType("market")}
-                      className="flex-1"
+                      className="flex-1 text-xs lg:text-sm"
                     >
                       Market
                     </Button>
@@ -260,7 +263,7 @@ export default function DexView() {
                       variant={orderType === "limit" ? "default" : "outline"}
                       size="sm"
                       onClick={() => setOrderType("limit")}
-                      className="flex-1"
+                      className="flex-1 text-xs lg:text-sm"
                     >
                       Limit
                     </Button>
@@ -269,27 +272,27 @@ export default function DexView() {
                   <TabsContent value="buy" className="space-y-4 mt-4">
                     {orderType === "limit" && (
                       <div>
-                        <label className="text-sm text-gray-400">Buy Price (USD)</label>
+                        <label className="text-xs lg:text-sm text-gray-400 block mb-2">Buy Price (USD)</label>
                         <Input
                           type="number"
                           placeholder="0.00"
                           value={buyPrice}
                           onChange={(e) => setBuyPrice(e.target.value)}
-                          className="bg-dark-bg border-dark-border"
+                          className="bg-dark-bg border-dark-border h-10 lg:h-11"
                         />
                       </div>
                     )}
                     <div>
-                      <label className="text-sm text-gray-400">Amount (USD)</label>
+                      <label className="text-xs lg:text-sm text-gray-400 block mb-2">Amount (USD)</label>
                       <Input
                         type="number"
                         placeholder="0.00"
                         value={buyAmount}
                         onChange={(e) => setBuyAmount(e.target.value)}
-                        className="bg-dark-bg border-dark-border"
+                        className="bg-dark-bg border-dark-border h-10 lg:h-11"
                       />
                     </div>
-                    <Button className="w-full bg-profit-green hover:bg-profit-green/80">
+                    <Button className="w-full bg-profit-green hover:bg-profit-green/80 h-10 lg:h-11 text-sm lg:text-base">
                       Buy {selectedPair.split('/')[0]}
                     </Button>
                   </TabsContent>
@@ -297,27 +300,27 @@ export default function DexView() {
                   <TabsContent value="sell" className="space-y-4 mt-4">
                     {orderType === "limit" && (
                       <div>
-                        <label className="text-sm text-gray-400">Sell Price (USD)</label>
+                        <label className="text-xs lg:text-sm text-gray-400 block mb-2">Sell Price (USD)</label>
                         <Input
                           type="number"
                           placeholder="0.00"
                           value={sellPrice}
                           onChange={(e) => setSellPrice(e.target.value)}
-                          className="bg-dark-bg border-dark-border"
+                          className="bg-dark-bg border-dark-border h-10 lg:h-11"
                         />
                       </div>
                     )}
                     <div>
-                      <label className="text-sm text-gray-400">Amount ({selectedPair.split('/')[0]})</label>
+                      <label className="text-xs lg:text-sm text-gray-400 block mb-2">Amount ({selectedPair.split('/')[0]})</label>
                       <Input
                         type="number"
                         placeholder="0.00000000"
                         value={sellAmount}
                         onChange={(e) => setSellAmount(e.target.value)}
-                        className="bg-dark-bg border-dark-border"
+                        className="bg-dark-bg border-dark-border h-10 lg:h-11"
                       />
                     </div>
-                    <Button className="w-full bg-loss-red hover:bg-loss-red/80">
+                    <Button className="w-full bg-loss-red hover:bg-loss-red/80 h-10 lg:h-11 text-sm lg:text-base">
                       Sell {selectedPair.split('/')[0]}
                     </Button>
                   </TabsContent>
@@ -328,20 +331,20 @@ export default function DexView() {
 
           {/* Order Book */}
           <Card className="bg-dark-surface border-dark-border">
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">Order Book</CardTitle>
+            <CardHeader className="p-3 lg:p-6">
+              <CardTitle className="text-sm lg:text-base font-medium">Order Book</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
               <div className="space-y-2">
                 {/* Asks (Sell Orders) */}
-                <div className="px-4">
-                  <div className="text-xs text-gray-400 grid grid-cols-3 gap-2 mb-2">
+                <div className="px-3 lg:px-4">
+                  <div className="text-xs text-gray-400 grid grid-cols-3 gap-1 lg:gap-2 mb-2">
                     <span>Price</span>
                     <span className="text-right">Amount</span>
                     <span className="text-right">Total</span>
                   </div>
                   {orderBook.asks.slice(0, 5).reverse().map((ask, index) => (
-                    <div key={index} className="text-xs grid grid-cols-3 gap-2 py-1">
+                    <div key={index} className="text-xs grid grid-cols-3 gap-1 lg:gap-2 py-1">
                       <span className="text-loss-red">{ask.price.toFixed(2)}</span>
                       <span className="text-right">{ask.amount.toFixed(6)}</span>
                       <span className="text-right">{ask.total.toFixed(2)}</span>
@@ -350,18 +353,18 @@ export default function DexView() {
                 </div>
 
                 {/* Current Price */}
-                <div className="px-4 py-2 bg-dark-bg">
+                <div className="px-3 lg:px-4 py-2 bg-dark-bg">
                   <div className="text-center">
-                    <span className="text-lg font-semibold">
+                    <span className="text-base lg:text-lg font-semibold">
                       {currentCrypto ? `$${parseFloat(currentCrypto.currentPrice).toFixed(2)}` : '$42,156.78'}
                     </span>
                   </div>
                 </div>
 
                 {/* Bids (Buy Orders) */}
-                <div className="px-4">
+                <div className="px-3 lg:px-4">
                   {orderBook.bids.slice(0, 5).map((bid, index) => (
-                    <div key={index} className="text-xs grid grid-cols-3 gap-2 py-1">
+                    <div key={index} className="text-xs grid grid-cols-3 gap-1 lg:gap-2 py-1">
                       <span className="text-profit-green">{bid.price.toFixed(2)}</span>
                       <span className="text-right">{bid.amount.toFixed(6)}</span>
                       <span className="text-right">{bid.total.toFixed(2)}</span>
@@ -376,46 +379,89 @@ export default function DexView() {
 
       {/* Recent Trades */}
       <Card className="bg-dark-surface border-dark-border">
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Clock className="h-5 w-5" />
+        <CardHeader className="p-3 lg:p-6">
+          <CardTitle className="flex items-center space-x-2 text-lg lg:text-xl">
+            <Clock className="h-4 lg:h-5 w-4 lg:w-5" />
             <span>Recent Trades</span>
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow className="border-dark-border">
-                <TableHead>Time</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Total</TableHead>
-                <TableHead>Side</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {recentTrades.slice(0, 10).map((trade, index) => (
-                <TableRow key={index} className="border-dark-border">
-                  <TableCell className="text-gray-400">
-                    {new Date(trade.time).toLocaleTimeString()}
-                  </TableCell>
-                  <TableCell className={trade.side === 'buy' ? 'text-profit-green' : 'text-loss-red'}>
-                    ${trade.price.toFixed(2)}
-                  </TableCell>
-                  <TableCell>{trade.amount.toFixed(6)}</TableCell>
-                  <TableCell>${trade.total.toFixed(2)}</TableCell>
-                  <TableCell>
+        <CardContent className="p-0 lg:p-6">
+          {/* Desktop Table View */}
+          <div className="hidden lg:block">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-dark-border">
+                  <TableHead>Time</TableHead>
+                  <TableHead>Price</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Total</TableHead>
+                  <TableHead>Side</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {recentTrades.slice(0, 10).map((trade, index) => (
+                  <TableRow key={index} className="border-dark-border">
+                    <TableCell className="text-gray-400">
+                      {new Date(trade.time).toLocaleTimeString()}
+                    </TableCell>
+                    <TableCell className={trade.side === 'buy' ? 'text-profit-green' : 'text-loss-red'}>
+                      ${trade.price.toFixed(2)}
+                    </TableCell>
+                    <TableCell>{trade.amount.toFixed(6)}</TableCell>
+                    <TableCell>${trade.total.toFixed(2)}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="secondary"
+                        className={trade.side === 'buy' ? 'bg-profit-green/20 text-profit-green' : 'bg-loss-red/20 text-loss-red'}
+                      >
+                        {trade.side}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="lg:hidden divide-y divide-dark-border">
+            {recentTrades.slice(0, 10).map((trade, index) => (
+              <div key={index} className="p-3 hover:bg-dark-bg/50 transition-colors">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center space-x-2">
                     <Badge
                       variant="secondary"
-                      className={trade.side === 'buy' ? 'bg-profit-green/20 text-profit-green' : 'bg-loss-red/20 text-loss-red'}
+                      className={cn(
+                        "text-xs font-medium",
+                        trade.side === 'buy' ? 'bg-profit-green/20 text-profit-green' : 'bg-loss-red/20 text-loss-red'
+                      )}
                     >
-                      {trade.side}
+                      {trade.side.toUpperCase()}
                     </Badge>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                    <span className="text-xs text-gray-400">
+                      {new Date(trade.time).toLocaleTimeString()}
+                    </span>
+                  </div>
+                  <div className={cn(
+                    "font-semibold text-sm",
+                    trade.side === 'buy' ? 'text-profit-green' : 'text-loss-red'
+                  )}>
+                    ${trade.price.toFixed(2)}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4 text-xs">
+                  <div>
+                    <p className="text-gray-400">Amount</p>
+                    <p className="font-medium">{trade.amount.toFixed(6)} {selectedPair.split('/')[0]}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400">Total</p>
+                    <p className="font-medium">${trade.total.toFixed(2)}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
     </div>
