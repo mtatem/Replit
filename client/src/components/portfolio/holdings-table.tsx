@@ -39,7 +39,7 @@ export default function HoldingsTable() {
       'SOL': '◎',
       'DOGE': '🐕',
     };
-    return icons[symbol] || '●';
+    return icons[symbol as keyof typeof icons] || '●';
   };
 
   const getAutomationType = (type: string) => {
@@ -78,12 +78,12 @@ export default function HoldingsTable() {
 
   return (
     <Card className="bg-dark-surface border-dark-border overflow-hidden">
-      <CardHeader className="border-b border-dark-border">
+      <CardHeader className="border-b border-dark-border p-4 lg:p-6">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-xl font-semibold">Your Holdings</CardTitle>
-          <div className="flex items-center space-x-4">
+          <CardTitle className="text-lg lg:text-xl font-semibold">Your Holdings</CardTitle>
+          <div className="flex items-center space-x-2 lg:space-x-4">
             <Select defaultValue="all">
-              <SelectTrigger className="w-48 bg-dark-bg border-dark-border">
+              <SelectTrigger className="w-32 lg:w-48 bg-dark-bg border-dark-border text-sm lg:text-base">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -94,15 +94,16 @@ export default function HoldingsTable() {
                 <SelectItem value="staked">Staked Assets</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="ghost" size="icon">
-              <RotateCcw className="h-4 w-4" />
+            <Button variant="ghost" size="icon" className="h-8 w-8 lg:h-10 lg:w-10">
+              <RotateCcw className="h-3 lg:h-4 w-3 lg:w-4" />
             </Button>
           </div>
         </div>
       </CardHeader>
       
       <CardContent className="p-0">
-        <div className="overflow-x-auto">
+        {/* Desktop Table View */}
+        <div className="hidden lg:block overflow-x-auto">
           <table className="w-full">
             <thead className="bg-dark-bg">
               <tr>
@@ -206,6 +207,104 @@ export default function HoldingsTable() {
               })}
             </tbody>
           </table>
+        </div>
+        
+        {/* Mobile Card View */}
+        <div className="lg:hidden divide-y divide-dark-border">
+          {holdings?.map((holding) => {
+            const currentValue = calculateCurrentValue(holding.balance, holding.crypto.currentPrice);
+            const { pnl, pnlPercent } = calculatePnL(currentValue, holding.totalInvested);
+            const priceChange = parseFloat(holding.crypto.priceChange24h);
+            const automation = getAutomationType(holding.crypto.type);
+            
+            return (
+              <div key={holding.id} className="p-4 hover:bg-dark-bg/50 transition-colors">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-gradient-to-r from-orange-400 to-orange-600 rounded-full flex items-center justify-center text-lg font-bold">
+                      {getCryptoIcon(holding.crypto.symbol)}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-base">{holding.crypto.name}</p>
+                      <p className="text-sm text-gray-400">{holding.crypto.symbol}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-base">${currentValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
+                    <Badge
+                      variant="secondary"
+                      className={cn(
+                        "text-xs font-medium",
+                        priceChange >= 0
+                          ? "bg-profit-green/20 text-profit-green"
+                          : "bg-loss-red/20 text-loss-red"
+                      )}
+                    >
+                      {priceChange >= 0 ? (
+                        <ArrowUpIcon className="w-3 h-3 mr-1" />
+                      ) : (
+                        <ArrowDownIcon className="w-3 h-3 mr-1" />
+                      )}
+                      {Math.abs(priceChange).toFixed(2)}%
+                    </Badge>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4 mb-3">
+                  <div>
+                    <p className="text-xs text-gray-400 mb-1">Balance</p>
+                    <p className="font-medium text-sm">{parseFloat(holding.balance).toFixed(6)} {holding.crypto.symbol}</p>
+                    {holding.isStaked && (
+                      <p className="text-xs text-crypto-green mt-1">
+                        {parseFloat(holding.stakedAmount).toFixed(2)} staked
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 mb-1">Price</p>
+                    <p className="font-medium text-sm">${parseFloat(holding.crypto.currentPrice).toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 mb-1">P&L</p>
+                    <div className={cn(
+                      "font-medium text-sm",
+                      pnl >= 0 ? "text-profit-green" : "text-loss-red"
+                    )}>
+                      <p>${Math.abs(pnl).toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
+                      <p className="text-xs">
+                        {pnl >= 0 ? '+' : '-'}{Math.abs(pnlPercent).toFixed(2)}%
+                      </p>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 mb-1">Automation</p>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-neon-green rounded-full animate-pulse"></div>
+                      <span className={cn("text-xs font-medium", automation.color)}>
+                        {automation.label}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex justify-between items-center pt-3 border-t border-dark-border">
+                  <div className="flex space-x-2">
+                    <Button variant="ghost" size="sm" className="text-xs">
+                      <ArrowLeftRight className="h-3 w-3 mr-1" />
+                      Swap
+                    </Button>
+                    <Button variant="ghost" size="sm" className="text-xs">
+                      <Coins className="h-3 w-3 mr-1" />
+                      Stake
+                    </Button>
+                  </div>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </CardContent>
     </Card>

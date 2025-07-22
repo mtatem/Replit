@@ -244,7 +244,7 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentUserId++;
-    const user: User = { ...insertUser, id };
+    const user: User = { ...insertUser, id, status: "Premium Member" };
     this.users.set(id, user);
     return user;
   }
@@ -264,7 +264,12 @@ export class MemStorage implements IStorage {
 
   async createCryptocurrency(crypto: InsertCryptocurrency): Promise<Cryptocurrency> {
     const id = this.currentCryptoId++;
-    const newCrypto: Cryptocurrency = { ...crypto, id };
+    const newCrypto: Cryptocurrency = { 
+      ...crypto, 
+      id,
+      marketCap: crypto.marketCap || null,
+      volume24h: crypto.volume24h || null
+    };
     this.cryptocurrencies.set(id, newCrypto);
     return newCrypto;
   }
@@ -291,7 +296,13 @@ export class MemStorage implements IStorage {
 
   async createPortfolioHolding(holding: InsertPortfolioHolding): Promise<PortfolioHolding> {
     const id = this.currentHoldingId++;
-    const newHolding: PortfolioHolding = { ...holding, id };
+    const newHolding: PortfolioHolding = { 
+      ...holding, 
+      id,
+      isStaked: holding.isStaked || false,
+      stakedAmount: holding.stakedAmount || "0",
+      stakingApy: holding.stakingApy || "0"
+    };
     this.portfolioHoldings.set(id, newHolding);
     return newHolding;
   }
@@ -317,7 +328,11 @@ export class MemStorage implements IStorage {
 
   async createAutomationRule(rule: InsertAutomationRule): Promise<AutomationRule> {
     const id = this.currentRuleId++;
-    const newRule: AutomationRule = { ...rule, id };
+    const newRule: AutomationRule = { 
+      ...rule, 
+      id,
+      enabled: rule.enabled !== undefined ? rule.enabled : true
+    };
     this.automationRules.set(id, newRule);
     return newRule;
   }
@@ -340,7 +355,10 @@ export class MemStorage implements IStorage {
     const newTransaction: Transaction = { 
       ...transaction, 
       id, 
-      createdAt: new Date() 
+      createdAt: new Date(),
+      fromCrypto: transaction.fromCrypto || null,
+      toCrypto: transaction.toCrypto || null,
+      automationTriggered: transaction.automationTriggered || false
     };
     this.transactions.set(id, newTransaction);
     return newTransaction;

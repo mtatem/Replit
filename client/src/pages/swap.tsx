@@ -97,27 +97,27 @@ export default function Swap() {
   };
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
+    <div className="py-4 lg:py-6 max-w-2xl mx-auto">
       <Card className="bg-dark-surface border-dark-border">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">Swap Cryptocurrencies</CardTitle>
+        <CardHeader className="p-4 lg:p-6">
+          <CardTitle className="text-xl lg:text-2xl font-bold text-center">Swap Cryptocurrencies</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="p-4 lg:p-6 space-y-4 lg:space-y-6">
           {/* From Section */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-400">From</label>
-            <div className="flex space-x-2">
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
               <div className="flex-1">
                 <Input
                   type="number"
                   placeholder="0.0"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="bg-dark-bg border-dark-border text-xl h-14"
+                  className="bg-dark-bg border-dark-border text-lg lg:text-xl h-12 lg:h-14"
                 />
               </div>
               <Select value={fromCrypto} onValueChange={setFromCrypto}>
-                <SelectTrigger className="w-32 bg-dark-bg border-dark-border h-14">
+                <SelectTrigger className="w-full sm:w-32 bg-dark-bg border-dark-border h-12 lg:h-14">
                   <SelectValue placeholder="Select" />
                 </SelectTrigger>
                 <SelectContent>
@@ -155,18 +155,18 @@ export default function Swap() {
           {/* To Section */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-400">To</label>
-            <div className="flex space-x-2">
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
               <div className="flex-1">
                 <Input
                   type="text"
                   placeholder="0.0"
                   value={calculateEstimatedOutput()}
                   readOnly
-                  className="bg-dark-bg border-dark-border text-xl h-14"
+                  className="bg-dark-bg border-dark-border text-lg lg:text-xl h-12 lg:h-14 text-gray-300"
                 />
               </div>
               <Select value={toCrypto} onValueChange={setToCrypto}>
-                <SelectTrigger className="w-32 bg-dark-bg border-dark-border h-14">
+                <SelectTrigger className="w-full sm:w-32 bg-dark-bg border-dark-border h-12 lg:h-14">
                   <SelectValue placeholder="Select" />
                 </SelectTrigger>
                 <SelectContent>
@@ -191,13 +191,13 @@ export default function Swap() {
 
           {/* Slippage Settings */}
           <Card className="bg-dark-bg border-dark-border">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
+            <CardContent className="p-3 lg:p-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
                 <div className="flex items-center space-x-2">
                   <Settings className="h-4 w-4" />
                   <span className="text-sm font-medium">Slippage Tolerance</span>
                 </div>
-                <div className="flex space-x-2">
+                <div className="flex flex-wrap gap-2">
                   {["0.1", "0.5", "1.0"].map((value) => (
                     <Button
                       key={value}

@@ -116,7 +116,7 @@ export default function Automation() {
   }
 
   return (
-    <div className="p-6 space-y-8">
+    <div className="py-4 lg:py-6 space-y-6 lg:space-y-8">
       {/* Automation Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card className="bg-gradient-to-r from-crypto-blue/20 to-crypto-green/20 border-crypto-blue/30">
@@ -191,30 +191,30 @@ export default function Automation() {
               
               return (
                 <Card key={config.type} className="bg-dark-surface border-dark-border">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className={`w-12 h-12 bg-gradient-to-r ${config.color} rounded-xl flex items-center justify-center`}>
-                          <Icon className="w-6 h-6 text-white" />
+                  <CardHeader className="p-4 lg:p-6">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center space-x-3 flex-1 min-w-0">
+                        <div className={`w-10 lg:w-12 h-10 lg:h-12 bg-gradient-to-r ${config.color} rounded-xl flex items-center justify-center flex-shrink-0`}>
+                          <Icon className="w-5 lg:w-6 h-5 lg:h-6 text-white" />
                         </div>
-                        <div>
-                          <CardTitle className="text-xl">{config.title}</CardTitle>
-                          <p className="text-sm text-gray-400">{ruleDescription.description}</p>
+                        <div className="min-w-0 flex-1">
+                          <CardTitle className="text-lg lg:text-xl truncate">{config.title}</CardTitle>
+                          <p className="text-xs lg:text-sm text-gray-400 line-clamp-2 mt-1">{ruleDescription.description}</p>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-4">
-                        <Badge variant="secondary" className={`${rule.enabled ? 'bg-neon-green/20 text-neon-green' : 'bg-gray-500/20 text-gray-500'}`}>
+                      <div className="flex flex-col lg:flex-row items-end lg:items-center space-y-2 lg:space-y-0 lg:space-x-4 ml-3">
+                        <Badge variant="secondary" className={`text-xs ${rule.enabled ? 'bg-neon-green/20 text-neon-green' : 'bg-gray-500/20 text-gray-500'}`}>
                           {rule.enabled ? 'Active' : 'Inactive'}
                         </Badge>
                         <Switch
-                          checked={rule.enabled}
+                          checked={rule.enabled || false}
                           onCheckedChange={(enabled) => handleRuleUpdate(config.type, 'enabled', enabled)}
                         />
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                  <CardContent className="p-4 lg:p-6 pt-0">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
                       <div className="space-y-2">
                         <Label htmlFor={`${config.type}-profit`} className="text-sm font-medium flex items-center space-x-2">
                           <Target className="w-4 h-4" />
@@ -295,7 +295,7 @@ export default function Automation() {
             })}
           </div>
 
-          <div className="flex justify-end space-x-4">
+          <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4">
             <Button
               variant="outline"
               className="border-dark-border"

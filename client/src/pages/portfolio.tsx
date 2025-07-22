@@ -29,24 +29,24 @@ export default function Portfolio() {
   ];
 
   return (
-    <div className="p-6 space-y-8">
+    <div className="py-4 lg:py-6 space-y-6 lg:space-y-8">
       {/* Portfolio Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
         <Card className="bg-gradient-to-r from-crypto-blue/20 to-crypto-green/20 border-crypto-blue/30">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Total Balance</h3>
-              <Eye className="h-5 w-5 text-gray-400" />
+          <CardContent className="p-4 lg:p-6">
+            <div className="flex items-center justify-between mb-3 lg:mb-4">
+              <h3 className="text-base lg:text-lg font-semibold">Total Balance</h3>
+              <Eye className="h-4 lg:h-5 w-4 lg:w-5 text-gray-400" />
             </div>
             <div className="space-y-2">
-              <p className="text-3xl font-bold">
+              <p className="text-2xl lg:text-3xl font-bold">
                 ${summary?.totalValue.toLocaleString(undefined, { maximumFractionDigits: 2 }) || '127,845.32'}
               </p>
-              <div className="flex items-center space-x-2">
-                <span className="text-profit-green font-medium">
+              <div className="flex items-center space-x-2 flex-wrap">
+                <span className="text-profit-green font-medium text-sm lg:text-base">
                   +${Math.abs(summary?.totalPnl || 8234.12).toLocaleString(undefined, { maximumFractionDigits: 2 })}
                 </span>
-                <Badge variant="secondary" className="bg-profit-green/20 text-profit-green">
+                <Badge variant="secondary" className="bg-profit-green/20 text-profit-green text-xs">
                   +{summary?.totalPnlPercent.toFixed(2) || '6.87'}%
                 </Badge>
                 <span className="text-xs text-gray-400">24h</span>
@@ -56,23 +56,23 @@ export default function Portfolio() {
         </Card>
         
         <Card className="bg-dark-surface border-dark-border">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Smart Automations</h3>
+          <CardContent className="p-4 lg:p-6">
+            <div className="flex items-center justify-between mb-3 lg:mb-4">
+              <h3 className="text-base lg:text-lg font-semibold">Smart Automations</h3>
               <div className="w-3 h-3 bg-neon-green rounded-full animate-pulse"></div>
             </div>
             <div className="space-y-2">
-              <p className="text-2xl font-bold text-neon-green">12 Active</p>
-              <p className="text-sm text-gray-400">Protecting your investments</p>
+              <p className="text-xl lg:text-2xl font-bold text-neon-green">12 Active</p>
+              <p className="text-xs lg:text-sm text-gray-400">Protecting your investments</p>
             </div>
           </CardContent>
         </Card>
         
         <Card className="bg-dark-surface border-dark-border">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Auto-Sells Today</h3>
-              <TrendingUp className="h-5 w-5 text-profit-green" />
+          <CardContent className="p-4 lg:p-6">
+            <div className="flex items-center justify-between mb-3 lg:mb-4">
+              <h3 className="text-base lg:text-lg font-semibold">Auto-Sells Today</h3>
+              <TrendingUp className="h-4 lg:h-5 w-4 lg:w-5 text-profit-green" />
             </div>
             <div className="space-y-2">
               <p className="text-2xl font-bold text-profit-green">$3,247.89</p>
