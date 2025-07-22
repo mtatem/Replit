@@ -1,6 +1,10 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+
+// Stripe integration will be enabled when API keys are provided
+// const Stripe = require('stripe');
+// const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
 import { insertTransactionSchema, insertAutomationRuleSchema } from "@shared/schema";
 import { z } from "zod";
 
@@ -278,6 +282,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(stakingRates);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch staking rates" });
+    }
+  });
+
+  // Stripe payment intent route (placeholder until API keys are configured)
+  app.post('/api/create-payment-intent', (req, res) => {
+    try {
+      const { amount, cryptoSymbol, paymentMethod } = req.body;
+      
+      if (!process.env.STRIPE_SECRET_KEY) {
+        return res.status(501).json({ 
+          error: 'Stripe integration not configured',
+          message: 'Please configure STRIPE_SECRET_KEY to enable payments'
+        });
+      }
+
+      // This will be implemented when Stripe keys are available
+      // const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+      // const paymentIntent = await stripe.paymentIntents.create({
+      //   amount: Math.round(amount * 100), // Convert to cents
+      //   currency: 'usd',
+      //   payment_method_types: [paymentMethod === 'card' ? 'card' : 'us_bank_account'],
+      //   metadata: {
+      //     cryptoSymbol,
+      //     paymentMethod
+      //   }
+      // });
+      
+      res.json({
+        clientSecret: 'placeholder_client_secret',
+        message: 'Stripe integration will be enabled when API keys are configured'
+      });
+    } catch (error) {
+      console.error('Error creating payment intent:', error);
+      res.status(500).json({ error: 'Failed to create payment intent' });
     }
   });
 
