@@ -22,6 +22,12 @@ The application follows a full-stack architecture with:
 - **Routing**: Wouter for client-side routing
 - **Styling**: Tailwind CSS with custom crypto-themed design tokens
 
+### Database Integration (Added January 22, 2025)
+- Replaced in-memory storage with PostgreSQL database using Neon serverless
+- Implemented comprehensive DatabaseStorage class with full CRUD operations
+- Added automatic database seeding with cryptocurrency data and demo user portfolio
+- Database includes: users, cryptocurrencies, portfolio holdings, automation rules, transactions, and portfolio history
+
 ## Key Components
 
 ### Frontend Architecture

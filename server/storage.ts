@@ -18,6 +18,8 @@ import {
   type PortfolioHistory,
   type InsertPortfolioHistory,
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
   // Users
@@ -381,4 +383,131 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
+  }
+
+  async getAllCryptocurrencies(): Promise<Cryptocurrency[]> {
+    return db.select().from(cryptocurrencies);
+  }
+
+  async getCryptocurrency(id: number): Promise<Cryptocurrency | undefined> {
+    const [crypto] = await db.select().from(cryptocurrencies).where(eq(cryptocurrencies.id, id));
+    return crypto || undefined;
+  }
+
+  async getCryptocurrencyBySymbol(symbol: string): Promise<Cryptocurrency | undefined> {
+    const [crypto] = await db.select().from(cryptocurrencies).where(eq(cryptocurrencies.symbol, symbol));
+    return crypto || undefined;
+  }
+
+  async createCryptocurrency(crypto: InsertCryptocurrency): Promise<Cryptocurrency> {
+    const [newCrypto] = await db
+      .insert(cryptocurrencies)
+      .values(crypto)
+      .returning();
+    return newCrypto;
+  }
+
+  async updateCryptocurrencyPrice(id: number, price: string, priceChange24h: string): Promise<void> {
+    await db
+      .update(cryptocurrencies)
+      .set({ currentPrice: price, priceChange24h })
+      .where(eq(cryptocurrencies.id, id));
+  }
+
+  async getUserPortfolio(userId: number): Promise<PortfolioHolding[]> {
+    return db.select().from(portfolioHoldings).where(eq(portfolioHoldings.userId, userId));
+  }
+
+  async getPortfolioHolding(userId: number, cryptoId: number): Promise<PortfolioHolding | undefined> {
+    const [holding] = await db
+      .select()
+      .from(portfolioHoldings)
+      .where(and(eq(portfolioHoldings.userId, userId), eq(portfolioHoldings.cryptoId, cryptoId)));
+    return holding || undefined;
+  }
+
+  async createPortfolioHolding(holding: InsertPortfolioHolding): Promise<PortfolioHolding> {
+    const [newHolding] = await db
+      .insert(portfolioHoldings)
+      .values(holding)
+      .returning();
+    return newHolding;
+  }
+
+  async updatePortfolioHolding(id: number, updates: Partial<PortfolioHolding>): Promise<void> {
+    await db
+      .update(portfolioHoldings)
+      .set(updates)
+      .where(eq(portfolioHoldings.id, id));
+  }
+
+  async getUserAutomationRules(userId: number): Promise<AutomationRule[]> {
+    return db.select().from(automationRules).where(eq(automationRules.userId, userId));
+  }
+
+  async getAutomationRuleByType(userId: number, cryptoType: string): Promise<AutomationRule | undefined> {
+    const [rule] = await db
+      .select()
+      .from(automationRules)
+      .where(and(eq(automationRules.userId, userId), eq(automationRules.cryptoType, cryptoType)));
+    return rule || undefined;
+  }
+
+  async createAutomationRule(rule: InsertAutomationRule): Promise<AutomationRule> {
+    const [newRule] = await db
+      .insert(automationRules)
+      .values(rule)
+      .returning();
+    return newRule;
+  }
+
+  async updateAutomationRule(id: number, updates: Partial<AutomationRule>): Promise<void> {
+    await db
+      .update(automationRules)
+      .set(updates)
+      .where(eq(automationRules.id, id));
+  }
+
+  async getUserTransactions(userId: number): Promise<Transaction[]> {
+    return db.select().from(transactions).where(eq(transactions.userId, userId));
+  }
+
+  async createTransaction(transaction: InsertTransaction): Promise<Transaction> {
+    const [newTransaction] = await db
+      .insert(transactions)
+      .values(transaction)
+      .returning();
+    return newTransaction;
+  }
+
+  async getUserPortfolioHistory(userId: number): Promise<PortfolioHistory[]> {
+    return db.select().from(portfolioHistory).where(eq(portfolioHistory.userId, userId));
+  }
+
+  async createPortfolioHistory(history: InsertPortfolioHistory): Promise<PortfolioHistory> {
+    const [newHistory] = await db
+      .insert(portfolioHistory)
+      .values(history)
+      .returning();
+    return newHistory;
+  }
+}
+
+export const storage = new DatabaseStorage();
