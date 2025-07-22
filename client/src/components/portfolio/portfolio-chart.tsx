@@ -104,27 +104,27 @@ export default function PortfolioChart({ data }: PortfolioChartProps) {
 
   return (
     <Card className="bg-dark-surface border-dark-border">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-xl font-semibold">Portfolio Performance</CardTitle>
-          <div className="flex space-x-2">
-            <Button variant="secondary" size="sm" className="bg-crypto-blue text-white">
+      <CardHeader className="p-3 lg:p-6">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <CardTitle className="text-lg lg:text-xl font-semibold">Portfolio Performance</CardTitle>
+          <div className="flex space-x-1 lg:space-x-2">
+            <Button variant="secondary" size="sm" className="bg-crypto-blue text-white text-xs lg:text-sm px-2 lg:px-3">
               7D
             </Button>
-            <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
+            <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white text-xs lg:text-sm px-2 lg:px-3">
               1M
             </Button>
-            <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
+            <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white text-xs lg:text-sm px-2 lg:px-3">
               3M
             </Button>
-            <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
+            <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white text-xs lg:text-sm px-2 lg:px-3">
               1Y
             </Button>
           </div>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="h-64">
+      <CardContent className="p-3 lg:p-6 pt-0">
+        <div className="h-48 lg:h-64">
           <canvas
             ref={canvasRef}
             className="w-full h-full"

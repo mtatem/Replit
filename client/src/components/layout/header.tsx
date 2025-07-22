@@ -33,26 +33,26 @@ export default function Header({ onMobileMenuToggle }: HeaderProps) {
   const pageDescription = pageDescriptions[location as keyof typeof pageDescriptions] || "Advanced cryptocurrency wallet";
 
   return (
-    <header className="bg-dark-surface border-b border-dark-border px-4 lg:px-6 py-4">
+    <header className="bg-dark-surface border-b border-dark-border px-3 lg:px-6 py-3 lg:py-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-3 lg:space-x-4">
           {/* Mobile Menu Toggle */}
           <Button 
             variant="ghost" 
             size="icon" 
-            className="lg:hidden"
+            className="lg:hidden h-8 w-8"
             onClick={onMobileMenuToggle}
           >
-            <Menu className="h-5 w-5" />
+            <Menu className="h-4 w-4" />
           </Button>
           
           <div>
-            <h2 className="text-xl lg:text-2xl font-bold">{pageName}</h2>
-            <p className="text-sm lg:text-base text-gray-400 hidden sm:block">{pageDescription}</p>
+            <h2 className="text-lg lg:text-2xl font-bold">{pageName}</h2>
+            <p className="text-xs lg:text-base text-gray-400 hidden sm:block">{pageDescription}</p>
           </div>
         </div>
         
-        <div className="flex items-center space-x-2 lg:space-x-4">
+        <div className="flex items-center space-x-1 lg:space-x-4">
           {/* Network Selector - Hidden on mobile */}
           <div className="hidden md:flex items-center space-x-2 px-3 lg:px-4 py-2 bg-dark-bg border border-dark-border rounded-xl">
             <div className="w-4 lg:w-6 h-4 lg:h-6 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full"></div>
@@ -61,13 +61,13 @@ export default function Header({ onMobileMenuToggle }: HeaderProps) {
           </div>
           
           {/* Notifications */}
-          <Button variant="ghost" size="icon" className="relative">
+          <Button variant="ghost" size="icon" className="relative h-8 w-8 lg:h-10 lg:w-10">
             <Bell className="h-4 lg:h-5 w-4 lg:w-5" />
-            <span className="absolute top-0 right-0 w-2 h-2 bg-neon-green rounded-full animate-pulse"></span>
+            <span className="absolute top-1 right-1 w-2 h-2 bg-neon-green rounded-full animate-pulse"></span>
           </Button>
           
           {/* Settings */}
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" className="h-8 w-8 lg:h-10 lg:w-10">
             <Settings className="h-4 lg:h-5 w-4 lg:w-5" />
           </Button>
         </div>

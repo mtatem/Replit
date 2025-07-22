@@ -78,12 +78,12 @@ export default function HoldingsTable() {
 
   return (
     <Card className="bg-dark-surface border-dark-border overflow-hidden">
-      <CardHeader className="border-b border-dark-border p-4 lg:p-6">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg lg:text-xl font-semibold">Your Holdings</CardTitle>
+      <CardHeader className="border-b border-dark-border p-3 lg:p-6">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <CardTitle className="text-base lg:text-xl font-semibold">Your Holdings</CardTitle>
           <div className="flex items-center space-x-2 lg:space-x-4">
             <Select defaultValue="all">
-              <SelectTrigger className="w-32 lg:w-48 bg-dark-bg border-dark-border text-sm lg:text-base">
+              <SelectTrigger className="w-28 lg:w-48 bg-dark-bg border-dark-border text-xs lg:text-base">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -94,7 +94,7 @@ export default function HoldingsTable() {
                 <SelectItem value="staked">Staked Assets</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="ghost" size="icon" className="h-8 w-8 lg:h-10 lg:w-10">
+            <Button variant="ghost" size="icon" className="h-7 w-7 lg:h-10 lg:w-10">
               <RotateCcw className="h-3 lg:h-4 w-3 lg:w-4" />
             </Button>
           </div>
@@ -218,10 +218,10 @@ export default function HoldingsTable() {
             const automation = getAutomationType(holding.crypto.type);
             
             return (
-              <div key={holding.id} className="p-4 hover:bg-dark-bg/50 transition-colors">
-                <div className="flex items-center justify-between mb-3">
+              <div key={holding.id} className="p-4 active:bg-dark-bg/70 transition-colors">
+                <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gradient-to-r from-orange-400 to-orange-600 rounded-full flex items-center justify-center text-lg font-bold">
+                    <div className="w-12 h-12 bg-gradient-to-r from-orange-400 to-orange-600 rounded-full flex items-center justify-center text-lg font-bold">
                       {getCryptoIcon(holding.crypto.symbol)}
                     </div>
                     <div>

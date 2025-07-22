@@ -53,9 +53,9 @@ export default function Sidebar({ onClose }: SidebarProps) {
             
             return (
               <Link key={item.name} href={item.href}>
-                <a
+                <div
                   className={cn(
-                    "flex items-center space-x-3 px-3 lg:px-4 py-3 rounded-xl transition-colors",
+                    "flex items-center space-x-3 px-3 lg:px-4 py-3 rounded-xl transition-colors cursor-pointer",
                     isActive
                       ? "bg-crypto-blue/20 border border-crypto-blue/30 text-crypto-blue"
                       : "hover:bg-dark-border text-gray-300 hover:text-white"
@@ -64,7 +64,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
                 >
                   <Icon className="w-5 h-5 flex-shrink-0" />
                   <span className="text-sm lg:text-base">{item.name}</span>
-                </a>
+                </div>
               </Link>
             );
           })}
