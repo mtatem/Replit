@@ -8,10 +8,14 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Bot, TrendingUp, AlertTriangle, Settings, Activity, Zap, Target, Shield, Laugh, Gem, Star, Play, Pause, RotateCcw } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
+import { Bot, TrendingUp, AlertTriangle, Settings, Activity, Zap, Target, Shield, Laugh, Gem, Star, Play, Pause, RotateCcw, Plus, Edit3, Trash2, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { getAutomationRuleDescription } from "@/lib/mock-data";
+import { cn } from "@/lib/utils";
 import type { AutomationRule } from "@shared/schema";
 
 interface AutomationExecution {
@@ -32,6 +36,17 @@ interface AutomationExecution {
   };
 }
 
+interface CustomRule {
+  id?: number;
+  name: string;
+  cryptoSymbol: string;
+  triggerType: 'price_above' | 'price_below' | 'percentage_gain' | 'percentage_loss' | 'volume_spike';
+  triggerValue: string;
+  actionType: 'sell_percentage' | 'buy_amount' | 'send_alert';
+  actionValue: string;
+  enabled: boolean;
+}
+
 export default function Automation() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -45,6 +60,40 @@ export default function Automation() {
   });
 
   const [localRules, setLocalRules] = useState<Record<string, AutomationRule>>({});
+  const [showCustomRuleDialog, setShowCustomRuleDialog] = useState(false);
+  const [editingCustomRule, setEditingCustomRule] = useState<CustomRule | null>(null);
+  const [customRules, setCustomRules] = useState<CustomRule[]>([
+    {
+      id: 1,
+      name: "BTC Price Alert",
+      cryptoSymbol: "BTC",
+      triggerType: "price_above",
+      triggerValue: "100000",
+      actionType: "send_alert",
+      actionValue: "Price alert triggered",
+      enabled: true
+    },
+    {
+      id: 2,
+      name: "ETH Stop Loss",
+      cryptoSymbol: "ETH",
+      triggerType: "percentage_loss",
+      triggerValue: "15",
+      actionType: "sell_percentage",
+      actionValue: "50",
+      enabled: false
+    }
+  ]);
+  
+  const [newCustomRule, setNewCustomRule] = useState<Omit<CustomRule, 'id'>>({
+    name: "",
+    cryptoSymbol: "BTC",
+    triggerType: "price_above",
+    triggerValue: "",
+    actionType: "send_alert",
+    actionValue: "",
+    enabled: true
+  });
 
   // Update local state when rules are loaded
   useState(() => {
@@ -140,6 +189,84 @@ export default function Automation() {
     });
   };
 
+  const handleCreateCustomRule = () => {
+    if (!newCustomRule.name || !newCustomRule.triggerValue || !newCustomRule.actionValue) {
+      toast({
+        title: "Invalid Rule",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const rule: CustomRule = {
+      id: Math.max(...customRules.map(r => r.id || 0)) + 1,
+      ...newCustomRule
+    };
+
+    setCustomRules(prev => [...prev, rule]);
+    setNewCustomRule({
+      name: "",
+      cryptoSymbol: "BTC",
+      triggerType: "price_above",
+      triggerValue: "",
+      actionType: "send_alert",
+      actionValue: "",
+      enabled: true
+    });
+    setShowCustomRuleDialog(false);
+    
+    toast({
+      title: "Rule Created",
+      description: `Custom rule "${rule.name}" has been created successfully`,
+    });
+  };
+
+  const handleEditCustomRule = (rule: CustomRule) => {
+    setEditingCustomRule(rule);
+    setNewCustomRule(rule);
+    setShowCustomRuleDialog(true);
+  };
+
+  const handleUpdateCustomRule = () => {
+    if (!editingCustomRule) return;
+
+    setCustomRules(prev => prev.map(r => 
+      r.id === editingCustomRule.id ? { ...newCustomRule, id: editingCustomRule.id } : r
+    ));
+    
+    setEditingCustomRule(null);
+    setNewCustomRule({
+      name: "",
+      cryptoSymbol: "BTC", 
+      triggerType: "price_above",
+      triggerValue: "",
+      actionType: "send_alert",
+      actionValue: "",
+      enabled: true
+    });
+    setShowCustomRuleDialog(false);
+
+    toast({
+      title: "Rule Updated",
+      description: "Custom rule has been updated successfully",
+    });
+  };
+
+  const handleDeleteCustomRule = (ruleId: number) => {
+    setCustomRules(prev => prev.filter(r => r.id !== ruleId));
+    toast({
+      title: "Rule Deleted",
+      description: "Custom rule has been deleted",
+    });
+  };
+
+  const toggleCustomRule = (ruleId: number) => {
+    setCustomRules(prev => prev.map(r => 
+      r.id === ruleId ? { ...r, enabled: !r.enabled } : r
+    ));
+  };
+
   const ruleConfigs = [
     {
       type: 'meme',
@@ -176,100 +303,514 @@ export default function Automation() {
     );
   }
 
+  const resetDialog = () => {
+    setEditingCustomRule(null);
+    setNewCustomRule({
+      name: "",
+      cryptoSymbol: "BTC",
+      triggerType: "price_above",
+      triggerValue: "",
+      actionType: "send_alert", 
+      actionValue: "",
+      enabled: true
+    });
+  };
+
   return (
-    <div className="py-4 lg:py-6 space-y-6 lg:space-y-8">
-      {/* Automation Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="bg-gradient-to-r from-crypto-blue/20 to-crypto-green/20 border-crypto-blue/30">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Active Automations</h3>
-              <Bot className="h-5 w-5 text-crypto-blue" />
-            </div>
-            <div className="space-y-2">
-              <p className="text-3xl font-bold text-neon-green">{mockStats.totalAutomations}</p>
-              <p className="text-sm text-gray-400">Protecting your portfolio</p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-dark-surface border-dark-border">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Active Triggers</h3>
-              <Activity className="h-5 w-5 text-neon-orange" />
-            </div>
-            <div className="space-y-2">
-              <p className="text-3xl font-bold text-neon-orange">{mockStats.activeTriggers}</p>
-              <p className="text-sm text-gray-400">Ready to execute</p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-dark-surface border-dark-border">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Profits Secured</h3>
-              <TrendingUp className="h-5 w-5 text-profit-green" />
-            </div>
-            <div className="space-y-2">
-              <p className="text-3xl font-bold text-profit-green">${mockStats.profitsSaved.toLocaleString()}</p>
-              <p className="text-sm text-gray-400">This year</p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-dark-surface border-dark-border">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Losses Prevented</h3>
-              <Shield className="h-5 w-5 text-crypto-blue" />
-            </div>
-            <div className="space-y-2">
-              <p className="text-3xl font-bold text-crypto-blue">${mockStats.lossesPrevented.toLocaleString()}</p>
-              <p className="text-sm text-gray-400">Through smart selling</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+    <div className="p-3 lg:p-6 max-w-7xl mx-auto">
+      <div className="space-y-4 lg:space-y-6">
+        {/* Header */}
+        <div className="text-center lg:text-left">
+          <h1 className="text-2xl lg:text-3xl font-bold mb-2">Smart Automation</h1>
+          <p className="text-gray-400">Automate your crypto trading with intelligent rules and custom triggers</p>
+        </div>
 
-      <Tabs defaultValue="rules" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 bg-dark-surface">
-          <TabsTrigger value="rules">Automation Rules</TabsTrigger>
-          <TabsTrigger value="history">Execution History</TabsTrigger>
-          <TabsTrigger value="settings">Advanced Settings</TabsTrigger>
-        </TabsList>
+        {/* Automation Overview */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+          <Card className="bg-gradient-to-r from-crypto-blue/20 to-crypto-green/20 border-crypto-blue/30">
+            <CardContent className="p-4 lg:p-6">
+              <div className="flex items-center justify-between mb-3 lg:mb-4">
+                <div className="flex items-center space-x-2">
+                  <Bot className="h-4 lg:h-5 w-4 lg:w-5 text-crypto-blue" />
+                  <h3 className="text-sm lg:text-lg font-semibold">Active Rules</h3>
+                </div>
+              </div>
+              <div className="space-y-1 lg:space-y-2">
+                <p className="text-2xl lg:text-3xl font-bold text-neon-green">{mockStats.totalAutomations}</p>
+                <p className="text-xs lg:text-sm text-gray-400">Protecting portfolio</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-dark-surface border-dark-border">
+            <CardContent className="p-4 lg:p-6">
+              <div className="flex items-center justify-between mb-3 lg:mb-4">
+                <div className="flex items-center space-x-2">
+                  <Activity className="h-4 lg:h-5 w-4 lg:w-5 text-neon-orange" />
+                  <h3 className="text-sm lg:text-lg font-semibold">Active Triggers</h3>
+                </div>
+              </div>
+              <div className="space-y-1 lg:space-y-2">
+                <p className="text-2xl lg:text-3xl font-bold text-neon-orange">{mockStats.activeTriggers}</p>
+                <p className="text-xs lg:text-sm text-gray-400">Ready to execute</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-dark-surface border-dark-border">
+            <CardContent className="p-4 lg:p-6">
+              <div className="flex items-center justify-between mb-3 lg:mb-4">
+                <div className="flex items-center space-x-2">
+                  <TrendingUp className="h-4 lg:h-5 w-4 lg:w-5 text-profit-green" />
+                  <h3 className="text-sm lg:text-lg font-semibold">Profits Secured</h3>
+                </div>
+              </div>
+              <div className="space-y-1 lg:space-y-2">
+                <p className="text-2xl lg:text-3xl font-bold text-profit-green">${mockStats.profitsSaved.toLocaleString()}</p>
+                <p className="text-xs lg:text-sm text-gray-400">This year</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-dark-surface border-dark-border">
+            <CardContent className="p-4 lg:p-6">
+              <div className="flex items-center justify-between mb-3 lg:mb-4">
+                <div className="flex items-center space-x-2">
+                  <Shield className="h-4 lg:h-5 w-4 lg:w-5 text-red-400" />
+                  <h3 className="text-sm lg:text-lg font-semibold">Losses Prevented</h3>
+                </div>
+              </div>
+              <div className="space-y-1 lg:space-y-2">
+                <p className="text-2xl lg:text-3xl font-bold text-red-400">${mockStats.lossesPrevented.toLocaleString()}</p>
+                <p className="text-xs lg:text-sm text-gray-400">This year</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-        <TabsContent value="rules" className="space-y-6">
-          {/* Automation Rules */}
-          <div className="space-y-6">
-            {ruleConfigs.map((config) => {
-              const rule = localRules[config.type];
-              const ruleDescription = getAutomationRuleDescription(config.type);
-              const Icon = config.icon;
-              
-              if (!rule) return null;
-              
-              return (
-                <Card key={config.type} className="bg-dark-surface border-dark-border">
-                  <CardHeader className="p-4 lg:p-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center space-x-3 flex-1 min-w-0">
-                        <div className={`w-10 lg:w-12 h-10 lg:h-12 bg-gradient-to-r ${config.color} rounded-xl flex items-center justify-center flex-shrink-0`}>
-                          <Icon className="w-5 lg:w-6 h-5 lg:h-6 text-white" />
+        <Tabs defaultValue="strategies" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 bg-dark-bg h-12 lg:h-14">
+            <TabsTrigger value="strategies" className="text-sm lg:text-base">Smart Strategies</TabsTrigger>
+            <TabsTrigger value="custom" className="text-sm lg:text-base">Custom Rules</TabsTrigger>
+            <TabsTrigger value="history" className="text-sm lg:text-base">Execution History</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="strategies" className="mt-4 lg:mt-6">
+            <div className="space-y-4 lg:space-y-6">
+              {/* Global Controls */}
+              <Card className="bg-dark-surface border-dark-border">
+                <CardContent className="p-4 lg:p-6">
+                  <div className="flex flex-col lg:flex-row justify-between lg:items-center space-y-4 lg:space-y-0">
+                    <div>
+                      <h3 className="text-lg font-semibold mb-1">Quick Controls</h3>
+                      <p className="text-sm text-gray-400">Manage all automation rules at once</p>
+                    </div>
+                    <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                      <Button
+                        onClick={() => pauseAllMutation.mutate()}
+                        variant="outline"
+                        className="border-dark-border"
+                        disabled={pauseAllMutation.isPending}
+                      >
+                        <Pause className="h-4 w-4 mr-2" />
+                        Pause All
+                      </Button>
+                      <Button
+                        onClick={() => enableAllMutation.mutate()}
+                        variant="outline" 
+                        className="border-dark-border"
+                        disabled={enableAllMutation.isPending}
+                      >
+                        <Play className="h-4 w-4 mr-2" />
+                        Enable All
+                      </Button>
+                      <Button
+                        onClick={() => resetDefaultsMutation.mutate()}
+                        variant="outline"
+                        className="border-dark-border"
+                        disabled={resetDefaultsMutation.isPending}
+                      >
+                        <RotateCcw className="h-4 w-4 mr-2" />
+                        Reset Defaults
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Smart Strategy Rules */}
+              <div className="space-y-4 lg:space-y-6">
+                {ruleConfigs.map((config) => {
+                  const rule = localRules[config.type];
+                  const ruleDescription = getAutomationRuleDescription(config.type);
+                  const Icon = config.icon;
+                  
+                  if (!rule) return null;
+                  
+                  return (
+                    <Card key={config.type} className="bg-dark-surface border-dark-border">
+                      <CardContent className="p-4 lg:p-6">
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between space-y-4 lg:space-y-0 lg:space-x-6">
+                          <div className="flex items-center space-x-3 flex-1">
+                            <div className={cn("w-10 lg:w-12 h-10 lg:h-12 bg-gradient-to-r rounded-xl flex items-center justify-center", config.color)}>
+                              <Icon className="w-5 lg:w-6 h-5 lg:h-6 text-white" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-2 mb-1">
+                                <h3 className="text-base lg:text-lg font-semibold">{config.title}</h3>
+                                <Badge variant="secondary" className={cn("text-xs", 
+                                  rule.enabled ? 'bg-neon-green/20 text-neon-green' : 'bg-gray-500/20 text-gray-500'
+                                )}>
+                                  {rule.enabled ? 'Active' : 'Inactive'}
+                                </Badge>
+                              </div>
+                              <p className="text-xs lg:text-sm text-gray-400">{ruleDescription.description}</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center space-x-2">
+                            <Switch
+                              checked={rule.enabled || false}
+                              onCheckedChange={(enabled) => handleRuleUpdate(config.type, 'enabled', enabled)}
+                            />
+                          </div>
                         </div>
-                        <div className="min-w-0 flex-1">
-                          <CardTitle className="text-lg lg:text-xl truncate">{config.title}</CardTitle>
-                          <p className="text-xs lg:text-sm text-gray-400 line-clamp-2 mt-1">{ruleDescription.description}</p>
+                        
+                        <Separator className="my-4 bg-dark-border" />
+                        
+                        {/* Rule Settings */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-xs lg:text-sm text-gray-400">Profit Target (%)</Label>
+                            <Input
+                              type="number"
+                              placeholder="0"
+                              value={rule.profitTarget || ''}
+                              onChange={(e) => handleRuleUpdate(config.type, 'profitTarget', e.target.value)}
+                              className="bg-dark-bg border-dark-border h-10"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs lg:text-sm text-gray-400">Stop Loss (%)</Label>
+                            <Input
+                              type="number"
+                              placeholder="0"
+                              value={rule.stopLoss || ''}
+                              onChange={(e) => handleRuleUpdate(config.type, 'stopLoss', e.target.value)}
+                              className="bg-dark-bg border-dark-border h-10"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs lg:text-sm text-gray-400">Sell Amount (%)</Label>
+                            <Input
+                              type="number"
+                              placeholder="0"
+                              value={rule.sellPercentage || ''}
+                              onChange={(e) => handleRuleUpdate(config.type, 'sellPercentage', e.target.value)}
+                              className="bg-dark-bg border-dark-border h-10"
+                            />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+              
+              <div className="flex justify-center">
+                <Button 
+                  onClick={handleSave}
+                  className="bg-gradient-to-r from-crypto-blue to-crypto-green px-8"
+                  disabled={updateRuleMutation.isPending}
+                >
+                  {updateRuleMutation.isPending ? "Saving..." : "Save All Changes"}
+                </Button>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="custom" className="mt-4 lg:mt-6">
+            <div className="space-y-4 lg:space-y-6">
+              {/* Header with Add Button */}
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+                <div>
+                  <h2 className="text-xl lg:text-2xl font-bold mb-1">Custom Automation Rules</h2>
+                  <p className="text-sm text-gray-400">Create personalized trading rules with custom triggers and actions</p>
+                </div>
+                <Dialog open={showCustomRuleDialog} onOpenChange={(open) => {
+                  setShowCustomRuleDialog(open);
+                  if (!open) resetDialog();
+                }}>
+                  <DialogTrigger asChild>
+                    <Button className="bg-gradient-to-r from-crypto-blue to-crypto-green">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Custom Rule
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-lg bg-dark-surface border-dark-border">
+                    <DialogHeader>
+                      <DialogTitle>{editingCustomRule ? 'Edit Custom Rule' : 'Create Custom Rule'}</DialogTitle>
+                      <DialogDescription>
+                        Set up automated triggers and actions for your cryptocurrency portfolio
+                      </DialogDescription>
+                    </DialogHeader>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <Label className="text-sm">Rule Name</Label>
+                        <Input
+                          placeholder="My Custom Rule"
+                          value={newCustomRule.name}
+                          onChange={(e) => setNewCustomRule({...newCustomRule, name: e.target.value})}
+                          className="bg-dark-bg border-dark-border mt-1"
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label className="text-sm">Cryptocurrency</Label>
+                        <Select value={newCustomRule.cryptoSymbol} onValueChange={(value) => setNewCustomRule({...newCustomRule, cryptoSymbol: value})}>
+                          <SelectTrigger className="bg-dark-bg border-dark-border mt-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-dark-surface border-dark-border">
+                            <SelectItem value="BTC">Bitcoin (BTC)</SelectItem>
+                            <SelectItem value="ETH">Ethereum (ETH)</SelectItem>
+                            <SelectItem value="SOL">Solana (SOL)</SelectItem>
+                            <SelectItem value="ADA">Cardano (ADA)</SelectItem>
+                            <SelectItem value="DOT">Polkadot (DOT)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label className="text-sm">Trigger Type</Label>
+                          <Select value={newCustomRule.triggerType} onValueChange={(value) => setNewCustomRule({...newCustomRule, triggerType: value as any})}>
+                            <SelectTrigger className="bg-dark-bg border-dark-border mt-1">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="bg-dark-surface border-dark-border">
+                              <SelectItem value="price_above">Price Above</SelectItem>
+                              <SelectItem value="price_below">Price Below</SelectItem>
+                              <SelectItem value="percentage_gain">% Gain</SelectItem>
+                              <SelectItem value="percentage_loss">% Loss</SelectItem>
+                              <SelectItem value="volume_spike">Volume Spike</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <div>
+                          <Label className="text-sm">Trigger Value</Label>
+                          <Input
+                            placeholder="1000"
+                            value={newCustomRule.triggerValue}
+                            onChange={(e) => setNewCustomRule({...newCustomRule, triggerValue: e.target.value})}
+                            className="bg-dark-bg border-dark-border mt-1"
+                          />
                         </div>
                       </div>
-                      <div className="flex flex-col lg:flex-row items-end lg:items-center space-y-2 lg:space-y-0 lg:space-x-4 ml-3">
-                        <Badge variant="secondary" className={`text-xs ${rule.enabled ? 'bg-neon-green/20 text-neon-green' : 'bg-gray-500/20 text-gray-500'}`}>
-                          {rule.enabled ? 'Active' : 'Inactive'}
-                        </Badge>
-                        <Switch
-                          checked={rule.enabled || false}
-                          onCheckedChange={(enabled) => handleRuleUpdate(config.type, 'enabled', enabled)}
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label className="text-sm">Action Type</Label>
+                          <Select value={newCustomRule.actionType} onValueChange={(value) => setNewCustomRule({...newCustomRule, actionType: value as any})}>
+                            <SelectTrigger className="bg-dark-bg border-dark-border mt-1">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="bg-dark-surface border-dark-border">
+                              <SelectItem value="sell_percentage">Sell %</SelectItem>
+                              <SelectItem value="buy_amount">Buy Amount</SelectItem>
+                              <SelectItem value="send_alert">Send Alert</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <div>
+                          <Label className="text-sm">Action Value</Label>
+                          <Input
+                            placeholder={newCustomRule.actionType === 'send_alert' ? 'Alert message' : '50'}
+                            value={newCustomRule.actionValue}
+                            onChange={(e) => setNewCustomRule({...newCustomRule, actionValue: e.target.value})}
+                            className="bg-dark-bg border-dark-border mt-1"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <DialogFooter>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setShowCustomRuleDialog(false);
+                          resetDialog();
+                        }}
+                        className="border-dark-border"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={editingCustomRule ? handleUpdateCustomRule : handleCreateCustomRule}
+                        className="bg-gradient-to-r from-crypto-blue to-crypto-green"
+                      >
+                        {editingCustomRule ? 'Update Rule' : 'Create Rule'}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              {/* Custom Rules List */}
+              <div className="space-y-4">
+                {customRules.map((rule) => (
+                  <Card key={rule.id} className="bg-dark-surface border-dark-border">
+                    <CardContent className="p-4 lg:p-6">
+                      <div className="flex flex-col lg:flex-row justify-between space-y-4 lg:space-y-0 lg:space-x-4">
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center space-x-3">
+                              <h3 className="font-semibold text-base lg:text-lg">{rule.name}</h3>
+                              <Badge variant="outline" className="text-xs">
+                                {rule.cryptoSymbol}
+                              </Badge>
+                              <Badge variant="secondary" className={cn("text-xs",
+                                rule.enabled ? 'bg-neon-green/20 text-neon-green' : 'bg-gray-500/20 text-gray-500'
+                              )}>
+                                {rule.enabled ? 'Active' : 'Inactive'}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Switch
+                                checked={rule.enabled}
+                                onCheckedChange={() => toggleCustomRule(rule.id!)}
+                                size="sm"
+                              />
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+                            <div className="p-2 bg-dark-bg rounded">
+                              <p className="text-gray-400 text-xs">Trigger</p>
+                              <p className="font-medium">
+                                {rule.triggerType.replace('_', ' ').toUpperCase()}: {rule.triggerValue}
+                                {rule.triggerType.includes('percentage') ? '%' : rule.triggerType.includes('price') ? ' USD' : ''}
+                              </p>
+                            </div>
+                            <div className="p-2 bg-dark-bg rounded">
+                              <p className="text-gray-400 text-xs">Action</p>
+                              <p className="font-medium">
+                                {rule.actionType.replace('_', ' ').toUpperCase()}: {rule.actionValue}
+                                {rule.actionType.includes('percentage') ? '%' : ''}
+                              </p>
+                            </div>
+                            <div className="p-2 bg-dark-bg rounded">
+                              <p className="text-gray-400 text-xs">Status</p>
+                              <p className={cn("font-medium", rule.enabled ? 'text-neon-green' : 'text-gray-500')}>
+                                {rule.enabled ? 'Monitoring' : 'Paused'}
+                              </p>
+                            </div>
+                            <div className="p-2 bg-dark-bg rounded">
+                              <p className="text-gray-400 text-xs">Last Check</p>
+                              <p className="font-medium text-gray-400">Just now</p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-start space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditCustomRule(rule)}
+                            className="border-dark-border"
+                          >
+                            <Edit3 className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteCustomRule(rule.id!)}
+                            className="border-dark-border text-red-400 hover:text-red-300"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+                
+                {customRules.length === 0 && (
+                  <Card className="bg-dark-surface border-dark-border border-dashed">
+                    <CardContent className="p-8 text-center">
+                      <Target className="h-12 w-12 text-gray-500 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold mb-2">No Custom Rules Yet</h3>
+                      <p className="text-gray-400 mb-4">Create your first custom automation rule to get started</p>
+                      <Button
+                        onClick={() => setShowCustomRuleDialog(true)}
+                        className="bg-gradient-to-r from-crypto-blue to-crypto-green"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Your First Rule
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="history" className="mt-4 lg:mt-6">
+            <Card className="bg-dark-surface border-dark-border">
+              <CardHeader className="p-4 lg:p-6">
+                <CardTitle className="flex items-center space-x-2">
+                  <Clock className="h-5 w-5" />
+                  <span>Automation Execution History</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 lg:p-6 pt-0">
+                {executionsLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin w-6 h-6 border-2 border-crypto-blue border-t-transparent rounded-full mx-auto mb-2" />
+                    <p className="text-gray-400">Loading execution history...</p>
+                  </div>
+                ) : executions && executions.length > 0 ? (
+                  <div className="space-y-4">
+                    {executions.map((execution) => (
+                      <div key={execution.id} className="flex items-center justify-between p-4 border border-dark-border rounded-xl">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-10 h-10 bg-gradient-to-r from-crypto-blue to-crypto-green rounded-full flex items-center justify-center">
+                            <Bot className="h-5 w-5 text-white" />
+                          </div>
+                          <div>
+                            <h4 className="font-semibold">{execution.crypto.name} ({execution.crypto.symbol})</h4>
+                            <p className="text-sm text-gray-400">
+                              {execution.type.toUpperCase()} • {execution.amount} {execution.crypto.symbol}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold">${parseFloat(execution.totalValue).toLocaleString()}</p>
+                          <p className="text-sm text-gray-400">
+                            {new Date(execution.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Activity className="h-12 w-12 text-gray-500 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No Executions Yet</h3>
+                    <p className="text-gray-400">Your automation rules haven't triggered any actions yet</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+}
                         />
                       </div>
                     </div>
