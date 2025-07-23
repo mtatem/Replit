@@ -3,23 +3,23 @@
 @tailwind utilities;
 
 :root {
-  --background: hsl(210, 40%, 98%);
-  --foreground: hsl(222.2, 84%, 4.9%);
-  --muted: hsl(210, 40%, 96%);
-  --muted-foreground: hsl(215.4, 16.3%, 46.9%);
-  --popover: hsl(0, 0%, 100%);
-  --popover-foreground: hsl(222.2, 84%, 4.9%);
-  --card: hsl(0, 0%, 100%);
-  --card-foreground: hsl(222.2, 84%, 4.9%);
-  --border: hsl(214.3, 31.8%, 91.4%);
-  --input: hsl(214.3, 31.8%, 91.4%);
+  --background: hsl(220, 13%, 7%);
+  --foreground: hsl(210, 40%, 98%);
+  --muted: hsl(220, 13%, 9%);
+  --muted-foreground: hsl(215, 20.2%, 65.1%);
+  --popover: hsl(220, 13%, 9%);
+  --popover-foreground: hsl(210, 40%, 98%);
+  --card: hsl(220, 13%, 9%);
+  --card-foreground: hsl(210, 40%, 98%);
+  --border: hsl(220, 13%, 13%);
+  --input: hsl(220, 13%, 13%);
   --primary: hsl(207, 90%, 54%);
   --primary-foreground: hsl(210, 40%, 98%);
-  --secondary: hsl(210, 40%, 96%);
-  --secondary-foreground: hsl(222.2, 84%, 4.9%);
-  --accent: hsl(210, 40%, 96%);
-  --accent-foreground: hsl(222.2, 84%, 4.9%);
-  --destructive: hsl(0, 84.2%, 60.2%);
+  --secondary: hsl(220, 13%, 13%);
+  --secondary-foreground: hsl(210, 40%, 98%);
+  --accent: hsl(220, 13%, 13%);
+  --accent-foreground: hsl(210, 40%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
   --destructive-foreground: hsl(210, 40%, 98%);
   --ring: hsl(207, 90%, 54%);
   --radius: 0.5rem;
@@ -68,9 +68,36 @@
     @apply font-sans antialiased bg-dark-bg text-white;
     font-family: 'Inter', sans-serif;
   }
+
+  /* Ensure all text elements are white by default */
+  h1, h2, h3, h4, h5, h6, p, span, div, label, a, button, input, textarea, select {
+    color: white !important;
+  }
+
+  /* Override any black text specifically */
+  .text-black {
+    color: white !important;
+  }
+
+  /* Ensure form inputs have white text */
+  input, textarea, select {
+    color: white !important;
+    background-color: hsl(220, 13%, 13%) !important;
+  }
+
+  /* Make sure placeholder text is visible */
+  input::placeholder, textarea::placeholder {
+    color: hsl(215, 20.2%, 65.1%) !important;
+  }
 }
 
 @layer utilities {
+  /* Force white text utility class */
+  .text-white-force {
+    color: white !important;
+  }
+
+  /* Visible text colors for crypto theme */
   .text-crypto-blue {
     color: hsl(207, 90%, 54%);
   }
@@ -93,6 +120,11 @@
   
   .text-loss-red {
     color: hsl(0, 72%, 51%);
+  }
+
+  /* Muted text that's still visible */
+  .text-muted-visible {
+    color: hsl(215, 20.2%, 65.1%) !important;
   }
   
   .bg-dark-bg {
