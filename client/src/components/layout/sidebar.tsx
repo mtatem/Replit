@@ -2,6 +2,7 @@ import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { Wallet, PieChart, ArrowLeftRight, CreditCard, Coins, TrendingUp, Bot, Shield, User, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import ChainSelector from "@/components/ui/chain-selector";
 
 const navigation = [
   { name: "Portfolio", href: "/", icon: PieChart },
@@ -44,6 +45,14 @@ export default function Sidebar({ onClose }: SidebarProps) {
             </Button>
           )}
         </div>
+        
+        {/* Mobile Network Selector */}
+        {onClose && (
+          <div className="mb-4 lg:hidden">
+            <div className="text-xs text-gray-400 mb-2 px-1">Network</div>
+            <ChainSelector className="w-full" />
+          </div>
+        )}
         
         {/* Navigation */}
         <nav className="space-y-2 flex-1">

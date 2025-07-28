@@ -101,6 +101,12 @@ The application uses the following core entities:
 - **Deployment**: Single Node.js process serving API and static files
 - **Database**: Production PostgreSQL instance via connection string
 
+### Recent Changes (January 28, 2025)
+- **Multi-Chain Network Selector**: Replaced static "Multi-Chain" text with interactive dropdown
+- **Supported Networks**: Bitcoin, Ethereum, Solana, Polygon, BSC, Avalanche, Arbitrum, Optimism
+- **Mobile Integration**: Added chain selector to mobile sidebar navigation
+- **Text Visibility**: Updated CSS to ensure all text is white for better visibility
+
 ### Key Architectural Decisions
 
 1. **Monorepo Structure**: Frontend, backend, and shared code in single repository
@@ -110,3 +116,4 @@ The application uses the following core entities:
 5. **Component-Driven UI**: Reusable components with consistent styling
 6. **Real-time Data**: Automatic refresh and caching for cryptocurrency data
 7. **Security Focus**: Multiple layers of security for crypto asset protection
+8. **Multi-Chain Support**: Interactive network selector supporting 8+ blockchain networks

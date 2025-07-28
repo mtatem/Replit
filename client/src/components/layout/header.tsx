@@ -1,6 +1,7 @@
-import { Bell, Settings, ChevronDown, Menu } from "lucide-react";
+import { Bell, Settings, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
+import ChainSelector from "@/components/ui/chain-selector";
 
 const pageNames = {
   "/": "Portfolio Overview",
@@ -54,10 +55,8 @@ export default function Header({ onMobileMenuToggle }: HeaderProps) {
         
         <div className="flex items-center space-x-1 lg:space-x-4">
           {/* Network Selector - Hidden on mobile */}
-          <div className="hidden md:flex items-center space-x-2 px-3 lg:px-4 py-2 bg-dark-bg border border-dark-border rounded-xl">
-            <div className="w-4 lg:w-6 h-4 lg:h-6 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full"></div>
-            <span className="font-medium text-sm lg:text-base">Multi-Chain</span>
-            <ChevronDown className="text-gray-400 w-3 lg:w-4 h-3 lg:h-4" />
+          <div className="hidden md:block">
+            <ChainSelector />
           </div>
           
           {/* Notifications */}
